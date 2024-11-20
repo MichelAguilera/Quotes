@@ -1,6 +1,5 @@
 
 #include "json.hpp"
-#include "logger.hpp"
 #include <filesystem>
 #include <ios>
 #include <iostream>
@@ -20,11 +19,8 @@
 
 using nlohmann::json;
 
-void _LOG()
-
 
 int main() {
-
     // Get current time for logger file name
     struct tm dt;
     time_t timestamp;
@@ -45,8 +41,6 @@ int main() {
         std::cerr << "Failed to open log file: " << log_file_name << std::endl;
         return -1;
     }
-    logger log(O_LOG, __PRETTY_FUNCTION__);
-    log.set_log_level(LOG_ERR);
 
     json j;
 
@@ -55,16 +49,14 @@ int main() {
 
     if (!I_JSON_FILE.is_open()) {
         std::string ERR_MSG = std::string(FATAL_ERROR_STR) + " :: Quotes I_JSON_FILE FAILED to open.";
-        log(LOG_ERR) << ERR_MSG;
         throw std::runtime_error(ERR_MSG);
     }
 
     I_JSON_FILE.seekg(0, I_JSON_FILE.end);
     std::streamsize I_JSON_FILE_size = I_JSON_FILE.tellg();
     I_JSON_FILE.seekg(0, I_JSON_FILE.beg);
-    if (I_JSON_FILE_size <= 0 || true) {
+    if (I_JSON_FILE_size <= 0) {
         std::string ERR_MSG = std::string(FATAL_ERROR_STR) + " :: Quotes I_JSON_FILE EMPTY or INVALID.";
-        log(LOG_ERR) << ERR_MSG;
         throw std::runtime_error(ERR_MSG);
     }
 
@@ -95,9 +87,10 @@ int main() {
 
     j = json::parse(json_string);
 
-    std::cout << j["quoteText"];
+    std::string tx = j["quoteText"];
+    std::string auth = j["quoteAuthor"];
+    std::cout << '"' << tx << '"' << "  - " << auth << std::endl;
 
-    log.flush();
     O_LOG.close();
     // If nothing was logged, delete the log file
     if (std::filesystem::file_size(std::filesystem::path(log_file_name)) <= 0) {
